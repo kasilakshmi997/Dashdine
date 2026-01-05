@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiggy Clone - Premium Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            emailjs.init("Yl2CI3v9OToBAM4aN"); 
+        })();
+    </script>
+
+    <style>
+        :root { 
+            --swiggy-orange: #fc8019; 
+            --unique-bg: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 25%, #ffd1ff 50%, #a1c4fd 100%); 
+        }
+
+        body { 
+            background: var(--unique-bg);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #282c3f; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+
+        #welcome-msg {
+            color: var(--swiggy-orange);
+            font-weight: 800;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .navbar { background: var(--swiggy-orange) !important; border-bottom: 3px solid #e67316; }
+
+        .glass-container {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .search-wrapper { position: relative; max-width: 600px; margin: 0 auto; }
+        .search-icon-inside { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--swiggy-orange); z-index: 10; }
+        #searchInput { padding-left: 50px; border-radius: 50px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+
+        .square-img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 20px; transition: 0.3s; }
+        .square-img:hover { transform: scale(1.05); }
+
+        .btn-buy { background-color: var(--swiggy-orange); color: white; font-weight: bold; border-radius: 10px; border: none; }
+        .btn-cart { background-color: white; color: var(--swiggy-orange); border: 2px solid var(--swiggy-orange); font-weight: bold; border-radius: 10px; }
+        
+        .item-name { font-weight: 700; margin-top: 12px; display: block; color: #3d4152; }
+        .card { border: none; background: white; border-radius: 20px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        /* NEW LOGIN ANIMATION STYLE */
+        .login-anim-icon { animation: bounceIn 0.8s ease; }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.1); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* SUCCESS DIALOGUE BOX */
+        .cart-dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 35px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            z-index: 10000;
+            text-align: center;
+            min-width: 320px;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .cart-dialog .icon-box {
+            width: 80px; height: 80px; background: #e8f5e9; color: #2ecc71;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px; font-size: 45px;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .overlay-dim {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+        }
+
+        .qty-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--swiggy-orange); background: white; color: var(--swiggy-orange); font-weight: bold; line-height: 1; }
+        
+        .payment-option { padding: 10px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold fs-3" href="#">Dashdine</a>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-dark btn-sm fw-bold px-3 rounded-pill" onclick="showOrders()">
+                <i class="bi bi-clock-history"></i> Orders
+            </button>
+            <button class="btn btn-light btn-sm fw-bold px-3 rounded-pill" onclick="openCartModal()">
+                <i class="bi bi-cart3"></i> Cart <span id="cart-count" class="badge bg-danger ms-1">0</span>
+            </button>
+            <button class="btn btn-dark btn-sm fw-bold px-3 rounded-pill" onclick="location.href='Profile.html'">
+                <i class="bi bi-person-circle"></i> Profile
+            </button>
+            <button class="btn btn-danger btn-sm fw-bold px-3 rounded-pill" onclick="logout()">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="modal fade" id="loginSuccessModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-5 border-0 shadow-lg" style="border-radius: 30px;">
+            <div class="mb-4">
+                <div class="login-anim-icon" style="font-size: 70px; color: #fc8019;">
+                    <i class="bi bi-person-check-fill"></i>
+                </div>
+            </div>
+            <h2 class="fw-bold">Login Successful!</h2>
+            <p class="text-muted">Welcome back, <span id="modalUserName" class="fw-bold text-dark"></span>!<br> Ready to order something delicious?</p>
+            <div class="d-grid gap-2 mt-4">
+                <button class="btn btn-warning btn-lg rounded-pill text-white fw-bold py-3" data-bs-dismiss="modal">START EXPLORING</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="cartOverlay" class="overlay-dim" onclick="closeSuccessDialog()"></div>
+<div id="cartSuccessDialog" class="cart-dialog">
+    <div class="icon-box"><i class="bi bi-bag-check-fill"></i></div>
+    <h4 class="fw-bold">Success!</h4>
+    <p id="addedItemName" class="text-muted mb-3 fw-bold text-uppercase" style="color: var(--swiggy-orange) !important;"></p>
+    <button class="btn btn-warning w-100 rounded-pill text-white fw-bold py-2 mb-2" onclick="closeSuccessDialog(); openCartModal();">VIEW CART</button>
+    <button class="btn btn-outline-secondary btn-sm border-0" onclick="closeSuccessDialog()">Continue Shopping</button>
+</div>
+
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Your Cart Items</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div id="cartListBody" style="max-height: 300px; overflow-y: auto;"></div>
+            <div class="border-top mt-3 pt-3">
+                <div class="d-flex justify-content-between fw-bold fs-5 mb-3"><span>Cart Total:</span><span class="text-success">₹<span id="cartTotalVal">0</span></span></div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-warning btn-lg rounded-pill text-white fw-bold" onclick="cartToCheckout()">BUY ALL ITEMS</button>
+                    <button class="btn btn-light rounded-pill fw-bold" data-bs-dismiss="modal">CANCEL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="checkoutModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content overflow-hidden">
+            <div class="row g-0">
+                <div class="col-md-5 bg-light p-4">
+                    <h4 class="fw-bold mb-4">Order Summary</h4>
+                    <div id="checkoutSummaryContent"></div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-1"><span>Item Total</span><span id="sumBase">₹0</span></div>
+                    <div class="d-flex justify-content-between mb-1"><span>Delivery Fee</span><span class="text-success">₹30</span></div>
+                    <div class="d-flex justify-content-between mb-3 text-muted small"><span>Platform Fee</span><span>₹5</span></div>
+                    <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-2"><span>Total</span><span id="sumTotal">₹0</span></div>
+                </div>
+                <div class="col-md-7 p-4">
+                    <div class="d-flex justify-content-between mb-3"><h4 class="fw-bold">Payment Methods</h4><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="payment-option"><input type="radio" name="p" id="method_upi" checked><span><i class="bi bi-qr-code text-primary"></i> UPI (PhonePe/GPay)</span></div>
+                    <div class="payment-option"><input type="radio" name="p"><span><i class="bi bi-credit-card text-danger"></i> Credit/Debit Card</span></div>
+                    <div class="payment-option"><input type="radio" name="p"><span><i class="bi bi-bank text-info"></i> Net Banking</span></div>
+                    <div class="payment-option"><input type="radio" name="p"><span><i class="bi bi-cash-stack text-success"></i> Cash on Delivery</span></div>
+                    <button id="orderBtn" class="btn btn-warning btn-lg w-100 rounded-pill text-white fw-bold mt-3" onclick="confirmOrder()">PLACE ORDER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="orderSuccessModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-5 border-0 shadow-lg" style="border-radius: 30px;">
+            <div class="mb-4">
+                <i class="bi bi-check-circle-fill" style="font-size: 80px; color: #2ecc71;"></i>
+            </div>
+            <h2 class="fw-bold">Order Placed!</h2>
+            <p class="text-muted">Your delicious meal is being prepared and will arrive shortly.</p>
+            <div class="d-grid gap-2 mt-4">
+                <button class="btn btn-warning btn-lg rounded-pill text-white fw-bold" onclick="showOrders()">VIEW MY ORDERS</button>
+                <button class="btn btn-light rounded-pill fw-bold" data-bs-dismiss="modal">CONTINUE SHOPPING</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewOrdersModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content p-4" style="border-radius: 25px;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold mb-0">My Order History</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div id="ordersHistoryList" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5 text-center">
+    <h1 id="welcome-msg">Hello!</h1>
+    <div class="search-wrapper mb-5">
+        <i class="bi bi-search search-icon-inside"></i>
+        <input type="text" id="searchInput" class="form-control form-control-lg shadow-sm" placeholder="Search for food..." onkeyup="filterItems()">
+    </div>
+</div>
+<div class="container glass-container">
+    <h3 class="fw-bold mb-4">Top Restaurant Chains</h3>
+    <div class="row row-cols-2 row-cols-md-4 g-4">
+        <div class="col text-center search-item"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500" class="square-img"><span class="item-name">The Grand Dine</span></div>
+        <div class="col text-center search-item"><img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500" class="square-img"><span class="item-name">Fuel Cafe</span></div>
+        <div class="col text-center search-item"><img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=500" class="square-img"><span class="item-name">Exotica Kitchen</span></div>
+        <div class="col text-center search-item"><img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?w=500" class="square-img"><span class="item-name">Ohris Eatmore</span></div>
+        <div class="col text-center search-item"><img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500" class="square-img"><span class="item-name">Bistro Bliss</span></div>
+        <div class="col text-center search-item"><img src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=500" class="square-img"><span class="item-name">Spice Garden</span></div>
+        <div class="col text-center search-item"><img src="https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=500" class="square-img"><span class="item-name">Royal Treat</span></div>
+        <div class="col text-center search-item"><img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500" class="square-img"><span class="item-name">Urban Platter</span></div>
+    </div>
+</div>
+
+<div class="container glass-container">
+    <h3 class="fw-bold mb-4">Popular Dishes</h3>
+    <div class="row row-cols-2 row-cols-md-4 g-4">
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500" class="square-img"><h6 class="item-name">Classic Pizza</h6><p class="text-success fw-bold">₹199</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Classic Pizza', 199)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Classic Pizza', 199)">Add to Cart</button></div></div></div>
+        
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500" class="square-img"><h6 class="item-name">Cheese Burger</h6><p class="text-success fw-bold">₹120</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Cheese Burger', 120)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Cheese Burger', 120)">Add to Cart</button></div></div></div>
+        
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=500" class="square-img"><h6 class="item-name">Mutton Biryani</h6><p class="text-success fw-bold">₹350</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Mutton Biryani', 350)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Mutton Biryani', 350)">Add to Cart</button></div></div></div>
+        
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500" class="square-img"><h6 class="item-name">Pasta Arrabiata</h6><p class="text-success fw-bold">₹220</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Pasta Arrabiata', 220)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Pasta Arrabiata', 220)">Add to Cart</button></div></div></div>
+        
+       
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" class="square-img"><h6 class="item-name">Chicken Noodles</h6><p class="text-success fw-bold">₹180</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Chicken Noodles', 180)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Chicken Noodles', 180)">Add to Cart</button></div></div></div>
+        
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500" class="square-img"><h6 class="item-name">Sushi Platter</h6><p class="text-success fw-bold">₹499</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Sushi Platter', 499)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Sushi Platter', 499)">Add to Cart</button></div></div></div>
+        
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=500" class="square-img"><h6 class="item-name">Masala Dosa</h6><p class="text-success fw-bold">₹110</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Masala Dosa', 110)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Masala Dosa', 110)">Add to Cart</button></div></div></div>
+
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500" class="square-img"><h6 class="item-name">Healthy Salad</h6><p class="text-success fw-bold">₹150</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Healthy Salad', 150)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Healthy Salad', 150)">Add to Cart</button></div></div></div>
+        
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=500" class="square-img"><h6 class="item-name">Pancakes</h6><p class="text-success fw-bold">₹180</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Pancakes', 180)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Pancakes', 180)">Add to Cart</button></div></div></div>
+        
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500" class="square-img"><h6 class="item-name">Chocolate Cake</h6><p class="text-success fw-bold">₹90</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Chocolate Cake', 90)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Chocolate Cake', 90)">Add to Cart</button></div></div></div>
+        
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=500" class="square-img"><h6 class="item-name">French Fries</h6><p class="text-success fw-bold">₹80</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('French Fries', 80)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('French Fries', 80)">Add to Cart</button></div></div></div>
+
+        <div class="col search-item"><div class="card h-100 text-center"><img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500" class="square-img"><h6 class="item-name">Mexican Tacos</h6><p class="text-success fw-bold">₹160</p><div class="d-grid gap-2"><button class="btn btn-sm btn-buy" onclick="directBuy('Mexican Tacos', 160)">Buy Now</button><button class="btn btn-sm btn-cart" onclick="addToCart('Mexican Tacos', 160)">Add to Cart</button></div></div></div>
+
+        
+    </div>
+</div>
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="emptyCartToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i> Your cart is empty! Add some items first.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let cart = [];
+    let orderHistory = [];
+    let currentOrderItems = [];
+
+    const checkoutMod = new bootstrap.Modal(document.getElementById('checkoutModal'));
+    const cartMod = new bootstrap.Modal(document.getElementById('cartModal'));
+    const orderSuccessMod = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
+    const viewOrdersMod = new bootstrap.Modal(document.getElementById('viewOrdersModal'));
+    const loginSuccessMod = new bootstrap.Modal(document.getElementById('loginSuccessModal'));
+
+    window.onload = function() {
+        const u = sessionStorage.getItem("userName") || "Guest";
+        document.getElementById('welcome-msg').innerText = "Hello, " + u + "!";
+        
+        // LOGIN FEATURE TRIGGER
+        document.getElementById('modalUserName').innerText = u;
+        if (!sessionStorage.getItem("loginShown")) {
+            loginSuccessMod.show();
+            sessionStorage.setItem("loginShown", "true");
+        }
+    }
+
+    // (Remaining existing functions: addToCart, closeSuccessDialog, updateBadge, openCartModal, changeQty, directBuy, cartToCheckout, showCheckout, confirmOrder, showOrders, filterItems, logout)
+    function addToCart(name, price) {
+        let item = cart.find(i => i.name === name);
+        if(item) item.qty++;
+        else cart.push({name, price, qty: 1});
+        updateBadge();
+        const overlay = document.getElementById('cartOverlay');
+        const dialog = document.getElementById('cartSuccessDialog');
+        document.getElementById('addedItemName').innerText = name;
+        overlay.style.display = 'block';
+        dialog.style.display = 'block';
+    }
+
+    function closeSuccessDialog() {
+        document.getElementById('cartOverlay').style.display = 'none';
+        document.getElementById('cartSuccessDialog').style.display = 'none';
+    }
+
+    function updateBadge() {
+        document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.qty, 0);
+    }
+
+    function openCartModal() {
+        let list = document.getElementById('cartListBody');
+        let total = 0;
+        list.innerHTML = cart.length ? "" : "<p class='text-center'>Cart is empty</p>";
+        cart.forEach((item, idx) => {
+            total += (item.price * item.qty);
+            list.innerHTML += `<div class='d-flex justify-content-between align-items-center mb-2'>
+                <span><b>${item.name}</b><br><small>₹${item.price}</small></span>
+                <div>
+                    <button class='qty-btn' onclick='changeQty(${idx}, -1)'>-</button>
+                    <span class='mx-2'>${item.qty}</span>
+                    <button class='qty-btn' onclick='changeQty(${idx}, 1)'>+</button>
+                </div>
+            </div>`;
+        });
+        document.getElementById('cartTotalVal').innerText = total;
+        cartMod.show();
+    }
+
+    function changeQty(i, d) {
+        cart[i].qty += d;
+        if(cart[i].qty <= 0) cart.splice(i, 1);
+        updateBadge();
+        openCartModal();
+    }
+
+    function directBuy(name, price) {
+        currentOrderItems = [{name, price, qty: 1}];
+        showCheckout(currentOrderItems);
+    }
+
+	function cartToCheckout() {
+	        if(!cart.length) {
+	            // Instead of alert(), show the Bootstrap Toast
+	            const toastEl = document.getElementById('emptyCartToast');
+	            const toast = new bootstrap.Toast(toastEl);
+	            toast.show();
+	            return;
+	        }
+	        currentOrderItems = [...cart];
+	        cartMod.hide();
+	        showCheckout(currentOrderItems);
+	    }
+    function showCheckout(items) {
+        let total = 0;
+        let html = "";
+        items.forEach(i => {
+            total += (i.price * i.qty);
+            html += `<div class='d-flex justify-content-between'><span>${i.name} x ${i.qty}</span><span>₹${i.price * i.qty}</span></div>`;
+        });
+        document.getElementById('checkoutSummaryContent').innerHTML = html;
+        document.getElementById('sumBase').innerText = "₹" + total;
+        document.getElementById('sumTotal').innerText = "₹" + (total + 35);
+        checkoutMod.show();
+    }
+
+    function confirmOrder() {
+        const btn = document.getElementById('orderBtn');
+        btn.innerText = "Processing...";
+        btn.disabled = true;
+        const userName = sessionStorage.getItem("userName") || "Guest";
+        const totalAmount = document.getElementById('sumTotal').innerText;
+        emailjs.send('service_wikdtam', 'template_cmt1px7', { from_name: userName, message: "New Order for " + totalAmount })
+            .then(() => { 
+                const newOrder = {
+                    id: "#DD-" + Math.floor(Math.random() * 100000),
+                    date: new Date().toLocaleString(),
+                    amount: totalAmount,
+                    items: currentOrderItems
+                };
+                orderHistory.unshift(newOrder);
+                checkoutMod.hide();
+                cart = []; 
+                updateBadge();
+                orderSuccessMod.show();
+            })
+            .finally(() => { 
+                btn.innerText = "PLACE ORDER"; 
+                btn.disabled = false; 
+            });
+    }
+
+    function showOrders() {
+        orderSuccessMod.hide();
+        let historyHTML = "";
+        if (orderHistory.length === 0) {
+            historyHTML = "<div class='text-center py-4'><i class='bi bi-inbox fs-1 text-muted'></i><p class='text-muted'>No orders placed yet.</p></div>";
+        } else {
+            orderHistory.forEach(order => {
+                historyHTML += `
+                <div class="card mb-3 p-3 border-0 shadow-sm" style="background: #fdfdfd; border-left: 5px solid var(--swiggy-orange) !important;">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold text-primary">${order.id}</span>
+                        <span class="text-muted small">${order.date}</span>
+                    </div>
+                    <div class="mt-2 small text-secondary">
+                        ${order.items.map(i => i.name + " x " + i.qty).join(", ")}
+                    </div>
+                    <div class="text-success fw-bold mt-1">Total: ${order.amount}</div>
+                </div>`;
+            });
+        }
+        document.getElementById('ordersHistoryList').innerHTML = historyHTML;
+        viewOrdersMod.show();
+    }
+
+	function filterItems() {
+	        const q = document.getElementById('searchInput').value.toLowerCase();
+	        let items = document.querySelectorAll('.search-item');
+	        let found = false;
+	        
+	        items.forEach(i => {
+	            if(i.innerText.toLowerCase().includes(q)) {
+	                i.style.display = "";
+	                found = true;
+	            } else {
+	                i.style.display = "none";
+	            }
+	        });
+	    }
+
+	function logout() {
+	        sessionStorage.clear();
+	        // Optional: Add a small delay for a smoother feel
+	        window.location.href="index.html"; 
+	    }
+</script>
+</body>
+</html>
